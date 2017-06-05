@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">TrexChat</string>
+
+    <string name="endCall1">End call</string>
+</resources>
