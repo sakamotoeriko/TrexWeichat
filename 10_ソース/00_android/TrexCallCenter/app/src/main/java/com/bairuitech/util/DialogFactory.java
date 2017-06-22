@@ -220,7 +220,7 @@ public class DialogFactory {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generate)d method stub
-				BussinessCenter.VideoCallControl(AnyChatDefine.BRAC_VIDEOCALL_EVENT_REQUEST, userId, 0,	0, 0, "");
+				BussinessCenter.VideoCallControl(AnyChatDefine.BRAC_VIDEOCALL_EVENT_REQUEST, userId, 0,	0, BussinessCenter.getRoomId(), BussinessCenter.getPassword());
 				mDialog.dismiss();
 			}
 		});

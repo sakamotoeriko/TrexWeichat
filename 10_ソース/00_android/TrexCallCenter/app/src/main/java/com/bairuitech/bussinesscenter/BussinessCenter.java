@@ -1,6 +1,8 @@
 package com.bairuitech.bussinesscenter;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import android.app.Activity;
 import android.content.Context;
@@ -20,10 +22,12 @@ import com.bairuitech.util.ScreenInfo;
 
 public class BussinessCenter{
 
+	public static final String TAG = BussinessCenter.class.getSimpleName();
 	public static AnyChatCoreSDK anychat;
 	private static BussinessCenter mBussinessCenter;
 	private MediaPlayer mMediaPlaer;
 	public static SessionItem sessionItem;
+	public static SessionItem sessionItemExtention;//
 	public static ScreenInfo mScreenInfo;
 	public static Activity mContext;
 	public static ArrayList<UserItem> mOnlineFriendItems;
@@ -197,6 +201,7 @@ public class BussinessCenter{
 		stopSessionMusic();
 		sessionItem = new SessionItem(dwFlags, selfUserId, dwUserId);
 		sessionItem.setRoomId(dwParam);
+		sessionItem.setRoomPwd(szUserStr);
 		Intent intent = new Intent();
 		intent.setClass(mContext, VideoActivity.class);
 		mContext.startActivity(intent);
@@ -205,7 +210,27 @@ public class BussinessCenter{
 	public void onVideoCallEnd(int dwUserId, int dwFlags, int dwParam,
 			String szUserStr) {
 		// TODO Auto-generated method stub
-		sessionItem = null;
+		if (dwUserId == sessionItem.targetUserId){
+			sessionItem = null;
+		}else if (dwUserId == sessionItemExtention.targetUserId){
+			sessionItemExtention = null;
+		}
+
+	}
+
+	public void onSecondVideoCallStart(int dwUserId, int dwFlags, int dwParam,
+									   String szUserStr){
+
+		sessionItemExtention = new SessionItem(dwFlags, selfUserId, dwUserId);
+		sessionItemExtention.setRoomId(dwParam);
+		sessionItemExtention.setRoomPwd(szUserStr);
+
+		Intent broadcastIntent = new Intent();
+		broadcastIntent.setPackage(VideoActivity.class.getPackage().getName());
+		broadcastIntent.setAction(VideoActivity.BROADCAST_NEWSESSION);
+
+		broadcastIntent.putExtra("",sessionItemExtention.getBundle());
+		mContext.startActivity(broadcastIntent);
 	}
 
 	/***
@@ -276,4 +301,115 @@ public class BussinessCenter{
 		}
 	}
 
+	public static int getRoomId(){
+		for (int i = 0 ;i < Integer.MAX_VALUE; i++){
+			int[] uids = anychat.GetRoomOnlineUsers(i);
+			Log.d(TAG,"getRoomId room:"+i+" uids:"+ Arrays.toString(uids));
+			if (uids==null || uids.length==0){
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	public static String getPassword(){
+
+
+		return "123456789";
+	}
+
+
+	public static final byte TRANSBUF_PRE1 = (byte) 0xff;
+	public static final byte TRANSBUF_PRE2 = (byte) 0x00;
+	public static final byte TRANSBUF_VIDEOCALL = (byte) 0xAE;
+	public static final byte TRANSBUF_VIDEOCALL_REQUEST = (byte) 0x01;
+	public static final byte TRANSBUF_VIDEOCALL_REPLAY = (byte) 0x02;
+
+	public void requestAnotherCall(int userId,int roomId,String pwd){
+		byte[] pwdbuf = pwd.getBytes(Charset.defaultCharset());
+		byte roomidbuf = (byte)roomId;
+		byte[] prebuf = {TRANSBUF_PRE1,TRANSBUF_PRE2,TRANSBUF_VIDEOCALL,TRANSBUF_VIDEOCALL_REQUEST};
+		byte[] buf = new byte[pwdbuf.length+1+prebuf.length];
+
+		System.arraycopy(prebuf,0,buf,0,prebuf.length);
+		buf[4] = roomidbuf;
+		System.arraycopy(pwdbuf,0,buf,5,pwdbuf.length);
+
+		anychat.TransBuffer(userId,buf,buf.length);
+	}
+
+	public void replayAnotherCall(int userId,boolean reject){
+
+		byte[] prebuf = {TRANSBUF_PRE1,TRANSBUF_PRE2,TRANSBUF_VIDEOCALL,TRANSBUF_VIDEOCALL_REPLAY};
+		byte[] buf = new byte[prebuf.length+1];
+
+		System.arraycopy(prebuf,0,buf,0,prebuf.length);
+		buf[buf.length-1] = reject?(byte)0x01:(byte)0x00;
+		anychat.TransBuffer(userId,buf,buf.length);
+	}
+
+	public void onTransBuffer(int dwUserid, byte[] lpBuf, int dwLen){
+		Log.d(TAG, "onTransBuffer dwUserid:" + dwUserid + " dwLen:" + dwLen + " lpBug:" + Arrays.toString(lpBuf));
+
+		if (lpBuf[0] == TRANSBUF_PRE1 &&
+				lpBuf[1] == TRANSBUF_PRE2 &&
+				lpBuf[2] == TRANSBUF_VIDEOCALL ){
+
+			if (lpBuf[3] == TRANSBUF_VIDEOCALL_REPLAY){
+				onReplayFromAnotherCall(dwUserid,lpBuf);
+			}else if (lpBuf[3] == TRANSBUF_VIDEOCALL_REQUEST){
+				onRequestFromAnotherCall(dwUserid,lpBuf);
+			}
+		}
+
+	}
+	public void onRequestFromAnotherCall(int userId,byte[] buf){
+		// TODO Check param
+		byte[] prebuf = new byte[4];
+		byte roomid  = buf[4];
+		byte[] pwdbuf = new byte[buf.length -5];
+
+		System.arraycopy(buf,0,prebuf,0,prebuf.length);
+		System.arraycopy(buf,5,pwdbuf,0,pwdbuf.length);
+
+		if (prebuf[0] == TRANSBUF_PRE1 &&
+				prebuf[1] == TRANSBUF_PRE2 &&
+				prebuf[2] == TRANSBUF_VIDEOCALL &&
+				prebuf[3] == TRANSBUF_VIDEOCALL_REQUEST){
+			String pwd = pwdbuf.toString();
+			Log.d(TAG, "onRequestFromAnotherCall roomid:" + roomid + "pwd:" + pwd);
+			replayAnotherCall(userId,false);//TODO temp replay the call
+			sessionItem = new SessionItem(0, selfUserId, userId);
+			sessionItem.setRoomId(roomid);
+			sessionItem.setRoomPwd(pwd);
+			Intent intent = new Intent();
+			intent.setClass(mContext, VideoActivity.class);
+			mContext.startActivity(intent);
+		}
+	}
+
+	public void onReplayFromAnotherCall(int userId,byte[] buf){
+		// TODO Check param
+		byte reject  = buf[4];
+
+		if (buf[0] == TRANSBUF_PRE1 &&
+				buf[1] == TRANSBUF_PRE2 &&
+				buf[2] == TRANSBUF_VIDEOCALL &&
+				buf[3] == TRANSBUF_VIDEOCALL_REPLAY) {
+
+			if (reject==(byte)0x00) {
+				//replay
+				sessionItemExtention = new SessionItem(0, selfUserId, userId);
+				sessionItemExtention.setRoomId(sessionItem.roomId);
+				sessionItemExtention.setRoomPwd(sessionItem.roomPwd);
+
+				Intent broadcastIntent = new Intent();
+				broadcastIntent.setPackage(VideoActivity.class.getPackage().getName());
+				broadcastIntent.setAction(VideoActivity.BROADCAST_NEWSESSION);
+
+				broadcastIntent.putExtra("", sessionItemExtention.getBundle());
+				mContext.sendBroadcast(broadcastIntent);
+			}
+		}
+	}
 }
