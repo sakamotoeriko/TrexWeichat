@@ -1,8 +1,8 @@
-package com.trex.trchat.trexbusiness;
+package com.trex.trchat.videocall.model;
 
 import java.io.Serializable;
 
-public class UserItem implements Serializable {
+public class UserInfo implements Serializable {
     private static final long serialVersionUID = 5170875856740191396L;
     public static final int USERSTATUS_OFFLINE = 0;
     public static final int USERSTATUS_ONLINE = 1;
@@ -13,7 +13,7 @@ public class UserItem implements Serializable {
     private String username;
     private String ip;
 
-    public UserItem(int userid, String username, String ip) {
+    public UserInfo(int userid, String username, String ip) {
         this.userid = userid;
         this.username = username;
         this.ip = ip;
@@ -48,7 +48,7 @@ public class UserItem implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        UserItem that = (UserItem) o;
+        UserInfo that = (UserInfo) o;
 
         return userid == that.userid;
 

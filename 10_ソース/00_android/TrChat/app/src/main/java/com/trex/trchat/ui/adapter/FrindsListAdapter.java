@@ -1,6 +1,7 @@
 package com.trex.trchat.ui.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,16 +9,16 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.trex.trchat.R;
-import com.trex.trchat.trexbusiness.UserItem;
+import com.trex.trchat.videocall.model.UserInfo;
 
 import java.util.List;
 
 public class FrindsListAdapter extends BaseAdapter {
 
     private Context mContext;
-    private List<UserItem> mFrinds;
+    private List<UserInfo> mFrinds;
 
-    public FrindsListAdapter(Context mContext, List<UserItem> mFrinds) {
+    public FrindsListAdapter(Context mContext, List<UserInfo> mFrinds) {
         this.mContext = mContext;
         this.mFrinds = mFrinds;
     }
@@ -49,9 +50,16 @@ public class FrindsListAdapter extends BaseAdapter {
         } else {
             vh = (ViewHolder) convertView.getTag();
         }
-        UserItem user = mFrinds.get(position);
+        UserInfo user = mFrinds.get(position);
         vh.id.setText(""+user.getUserid());
         vh.name.setText(""+user.getUsername());
+        if (position==0){
+            vh.id.setTextColor(Color.RED);
+            vh.name.setTextColor(Color.RED);
+        }else{
+            vh.id.setTextColor(Color.WHITE);
+            vh.name.setTextColor(Color.WHITE);
+        }
         return convertView;
     }
 

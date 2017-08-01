@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -13,7 +14,12 @@ import com.trex.trchat.R;
 import com.trex.trchat.common.DialogUtils;
 import com.trex.trchat.lib.trexsdk.TrChatCoreSdk;
 import com.trex.trchat.lib.trexsdk.callbacks.TrChatBaseEvent;
-import com.trex.trchat.trexbusiness.VideoCallBusiness;
+import com.trex.trchat.trexbusiness.TrChatController;
+import com.trex.trchat.videocall.model.UserInfo;
+
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.util.Enumeration;
 
 
 public class LoginActivity extends Activity implements TrChatBaseEvent {
@@ -23,6 +29,7 @@ public class LoginActivity extends Activity implements TrChatBaseEvent {
     private EditText mUsername;
     private Button mLogin;
     private ProgressDialog mProgressDialog;
+    private Handler mHandler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +42,13 @@ public class LoginActivity extends Activity implements TrChatBaseEvent {
         mTrChatCoreSdk.setContext(getApplicationContext());
         mTrChatCoreSdk.initSdk();
         mTrChatCoreSdk.setBaseEvent(this);
+
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Login();
+            }
+        });
     }
 
     public void onClick(View view) {
@@ -44,16 +58,40 @@ public class LoginActivity extends Activity implements TrChatBaseEvent {
                 break;
         }
     }
+    private static final String LOCAL_LOOPBACK_ADDR = "127.0.0.1";
+    private static final String INVALID_ADDR = "0.0.0.0";
+    private static String getMobileIPAddress() {
+        try {
+            NetworkInterface ni = NetworkInterface.getByName("hso0"); // インターフェース名
+            if (ni == null) {
+                Log.d(TAG, "Failed to get mobile interface.");
+                return "Failed1";
+            }
 
+            Enumeration<InetAddress> addresses = ni.getInetAddresses();
+            while (addresses.hasMoreElements()) {
+                String address = addresses.nextElement().getHostAddress();
+                if (!LOCAL_LOOPBACK_ADDR.equals(address) && !INVALID_ADDR.equals(address)) {
+                    // Found valid ip address.
+                    return address.replace(".","").replace(" ","");
+                }
+            }
+            return  "Failed2";
+        } catch (Exception e) {
+            Log.d(TAG, "Exception occured. e=" + e.getMessage());
+            return  "Failed3";
+        }
+    }
     private void Login() {
-        String name = mUsername.getText().toString();
-
+//        String name = mUsername.getText().toString();
+        String name = getMobileIPAddress();
 
         /**
          *AnyChat可以连接自主部署的服务器、也可以连接AnyChat视频云平台；
          *连接自主部署服务器的地址为自设的服务器IP地址或域名、端口；
          *连接AnyChat视频云平台的服务器地址为：cloud.anychat.cn；端口为：8906
          */
+//        this.mTrChatCoreSdk.connect("157.7.165.211", 8906);
         this.mTrChatCoreSdk.connect("demo.anychat.cn", 8906);
         /***
          * AnyChat支持多种用户身份验证方式，包括更安全的签名登录，
@@ -81,13 +119,16 @@ public class LoginActivity extends Activity implements TrChatBaseEvent {
     public void OnTrChatLoginMessage(int dwUserId, int dwErrorCode) {
         Log.d(TAG, "OnTrChatLoginMessage dwUserId:" + dwUserId + " dwErrorCode:" + dwErrorCode);
         if (dwErrorCode == 0) {
-            VideoCallBusiness vb = VideoCallBusiness.getInstance();
-            vb.setContext(getApplicationContext());
-            vb.setmSelf(dwUserId, mUsername.getText().toString());
+            TrChatController business = TrChatController.getInstance(getApplication());
+
+            String name = mTrChatCoreSdk.getUserName(dwUserId);
+            String ip = mTrChatCoreSdk.getIpAddr(dwUserId);
+            business.setSelf(new UserInfo(dwUserId, name, ip));
 
             Intent intent = new Intent();
             intent.setClass(this, HomeActivity.class);
             this.startActivity(intent);
+            finish();
         } else if (dwErrorCode == 200) {
             DialogUtils.showToast(LoginActivity.this, "login failed");
         }

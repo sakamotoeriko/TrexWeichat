@@ -8,6 +8,7 @@ import android.view.SurfaceView;
 import android.view.View;
 
 import com.bairuitech.anychat.AnyChatCoreSDK;
+import com.trex.trchat.R;
 import com.trex.trchat.lib.trexsdk.TrChatCoreSdk;
 import com.trex.trchat.lib.trexsdk.common.TrChatSdkDefine;
 
@@ -20,32 +21,40 @@ public class VideoSession {
     private SurfaceView surfaceView;
     private int userid;
     private int index;
+    private boolean isMainView;
     public boolean isOpened;
-    private Timer mTimerCheckVideo;
 
-    public VideoSession(int userid, SurfaceView surfaceView) {
-        this.userid = userid;
+    private Timer mTimerCheckVideo;
+    private TrChatCoreSdk mTrChatCoreSdk;
+
+    public VideoSession(SurfaceView surfaceView, int userid, boolean isMain) {
         this.surfaceView = surfaceView;
+        this.userid = userid;
         isOpened = false;
+        isMainView = isMain;
+        mTrChatCoreSdk = TrChatCoreSdk.getInstance();
+        Log.d(TAG,"new userid:"+userid);
     }
 
     public void init() {
-        TrChatCoreSdk trChatCoreSdk = TrChatCoreSdk.getInstance();
         if (isLocal()) {
             index = -1;
-            surfaceView.getHolder().setType(
-                    SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
             surfaceView.setZOrderOnTop(true);
-            if (trChatCoreSdk.getSDKOptionInt(TrChatSdkDefine.define.BRAC_SO_LOCALVIDEO_CAPDRIVER) == TrChatSdkDefine.define.VIDEOCAP_DRIVER_JAVA) {
-                surfaceView.getHolder().addCallback(TrChatCoreSdk.mCameraHelper);
+            if (mTrChatCoreSdk.getSDKOptionInt(TrChatSdkDefine.define.BRAC_SO_LOCALVIDEO_CAPDRIVER) == TrChatSdkDefine.define.VIDEOCAP_DRIVER_JAVA) {
+                surfaceView.getHolder().addCallback(mTrChatCoreSdk.mCameraHelper);
             }
             // 默认打开前置摄像头
-            TrChatCoreSdk.mCameraHelper.SelectVideoCapture(AnyChatCoreSDK.mCameraHelper.CAMERA_FACING_FRONT);
+            mTrChatCoreSdk.mCameraHelper.SelectVideoCapture(AnyChatCoreSDK.mCameraHelper.CAMERA_FACING_FRONT);
+            Log.d(TAG, "init open local camera");
         } else {
-            if (trChatCoreSdk.getSDKOptionInt(TrChatSdkDefine.define.BRAC_SO_VIDEOSHOW_DRIVERCTRL) == TrChatSdkDefine.define.VIDEOSHOW_DRIVER_JAVA) {
-                index = trChatCoreSdk.bindVideo(surfaceView.getHolder());
-                trChatCoreSdk.setVideoUser(index, userid);
+            if (!isMainView) {
+                Log.d(TAG, "not the main view");
+//                surfaceView.setZOrderOnTop(true);
             }
+            surfaceView.setTag(userid);
+            index = mTrChatCoreSdk.bindVideo(surfaceView.getHolder());
+            mTrChatCoreSdk.setVideoUser(index, userid);
+            Log.d(TAG, "init target userid:" + userid + " index:" + index + "surface:" + (String) surfaceView.getTag(R.string.index));
         }
     }
 
@@ -57,71 +66,101 @@ public class VideoSession {
                 checkVideoStatus();
             }
         }, 1000, 100);
+        openCameraSpeaker();
+        Log.d(TAG,"start userid:"+userid);
     }
 
     public void stop() {
+        closeCameraSpeaker();
+        if (mTimerCheckVideo != null)
+            mTimerCheckVideo.cancel();
+        isOpened = false;
+        Log.d(TAG,"stop userid:"+userid);
+    }
+
+    public void openCameraSpeaker() {
+        openCamera();
+        openSpeaker();
+    }
+
+    public void closeCameraSpeaker() {
         closeCamera();
         closeSpeaker();
-        mTimerCheckVideo.cancel();
-        isOpened = false;
     }
 
-    public void openCamera() {
-        TrChatCoreSdk.getInstance().userCameraControl(userid, 1);
-    }
-
-    public void openSpeaker() {
-        TrChatCoreSdk.getInstance().userSpeakControl(userid, 1);
-    }
-
-    public void closeCamera() {
-        TrChatCoreSdk.getInstance().userCameraControl(userid, 0);
-    }
-
-    public void closeSpeaker() {
-        TrChatCoreSdk.getInstance().userSpeakControl(userid, 0);
+    public void setSurfaceViewVisibility(int visibility) {
+        surfaceView.setVisibility(visibility);
     }
 
     public boolean isSurfaceViewVisible() {
         return (surfaceView.getVisibility() == View.VISIBLE);
     }
 
+    public boolean isUser(int userid) {
+        return this.userid == userid;
+    }
+
+    public boolean isSurfaceView(SurfaceView sv) {
+        return this.surfaceView.equals(sv);
+    }
+
     private void checkVideoStatus() {
-        Log.d(TAG, "checkVideoStatus");
-
-        if (isOpened || surfaceView.getVisibility() != View.VISIBLE)
+        if (isOpened) {
+            Log.w("[TAGLOOP]", "checkVideoStatus isOpened:" + isOpened);
             return;
+        }
+        if (surfaceView.getVisibility() != View.VISIBLE) {
+            Log.w(TAG, "checkVideoStatus not visible");
+            return;
+        }
 
-        TrChatCoreSdk trChatCoreSdk = TrChatCoreSdk.getInstance();
-        if (isLocal()) {
-            if (trChatCoreSdk.getCameraState(-1) == 2 && trChatCoreSdk.getUserVideoWidth(-1) != 0) {
-                SurfaceHolder holder = surfaceView.getHolder();
-                if (trChatCoreSdk.getSDKOptionInt(TrChatSdkDefine.define.BRAC_SO_VIDEOSHOW_DRIVERCTRL) != TrChatSdkDefine.define.VIDEOSHOW_DRIVER_JAVA) {
-                    holder.setFormat(PixelFormat.RGB_565);
-                    holder.setFixedSize(trChatCoreSdk.getUserVideoWidth(-1), trChatCoreSdk.getUserVideoHeight(-1));
+        boolean isLocal = isLocal();
+        int cameraState = mTrChatCoreSdk.getCameraState(userid);
+        int videoState = mTrChatCoreSdk.getUserVideoWidth(userid);
+        final SurfaceHolder holder = surfaceView.getHolder();
+//        Log.d("[TAGLOOP]", "checkVideoStatus userid:" + userid + " cameraState:" + cameraState + " videoState:" + videoState);
+
+        if (cameraState != 2 && videoState != 0) {
+            isOpened = true;
+            holder.setFormat(PixelFormat.RGB_565);
+
+            surfaceView.post(new Runnable() {
+                @Override
+                public void run() {
+                    holder.setFixedSize(mTrChatCoreSdk.getUserVideoWidth(userid), mTrChatCoreSdk.getUserVideoHeight(userid));
                 }
+            });
+
+//            Surface s = holder.getSurface();
+//            mTrChatCoreSdk.setVideoPos(userid, s, 0, 0, 0, 0);
+            if (isLocal) {
                 Surface s = holder.getSurface();
-                trChatCoreSdk.setVideoPos(-1, s, 0, 0, 0, 0);
-                isOpened = true;
+                mTrChatCoreSdk.setVideoPos(-1, s, 0, 0, 0, 0);
+            } else {
+                mTrChatCoreSdk.setVideoUser(index, userid);
             }
-        } else {
-            if (trChatCoreSdk.getCameraState(userid) == 2 && trChatCoreSdk.getUserVideoWidth(userid) != 0) {
-                SurfaceHolder holder = surfaceView.getHolder();
-                // 如果是采用内核视频显示（非Java驱动），则需要设置Surface的参数
-                if (trChatCoreSdk.getSDKOptionInt(TrChatSdkDefine.define.BRAC_SO_VIDEOSHOW_DRIVERCTRL) != TrChatSdkDefine.define.VIDEOSHOW_DRIVER_JAVA) {
-                    holder.setFormat(PixelFormat.RGB_565);
-                    holder.setFixedSize(trChatCoreSdk.getUserVideoWidth(-1), trChatCoreSdk.getUserVideoHeight(-1));
-                }
-                Surface s = holder.getSurface();
-                if (trChatCoreSdk.getSDKOptionInt(TrChatSdkDefine.define.BRAC_SO_VIDEOSHOW_DRIVERCTRL) == TrChatSdkDefine.define.VIDEOSHOW_DRIVER_JAVA) {
-                    trChatCoreSdk.setVideoUser(index, userid);
-                } else {
-                    trChatCoreSdk.setVideoPos(userid, s, 0, 0, 0, 0);
-                }
-                isOpened = true;
-            }
+            Log.d(TAG,"open checkVideoStatus userid:"+userid);
         }
     }
+
+    private void openCamera() {
+        int ret = mTrChatCoreSdk.userCameraControl(userid, 1);
+        Log.d(TAG, "openCamera:" + userid + " ret =" + ret);
+    }
+
+    private void openSpeaker() {
+//        mTrChatCoreSdk.userSpeakControl(userid, 1);
+    }
+
+    private void closeCamera() {
+        mTrChatCoreSdk.userCameraControl(userid, 0);
+        Log.d(TAG, "closeCamera:" + userid);
+    }
+
+    private void closeSpeaker() {
+        mTrChatCoreSdk.userSpeakControl(userid, 0);
+    }
+
 
     private boolean isLocal() {
         return (userid == -1);

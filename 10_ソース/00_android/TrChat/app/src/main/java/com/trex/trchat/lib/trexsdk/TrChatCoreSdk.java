@@ -14,6 +14,8 @@ import com.trex.trchat.lib.trexsdk.common.TrChatCoreSdkBase;
 import com.trex.trchat.lib.trexsdk.common.TrChatSdkExceptionFactory;
 import com.bairuitech.anychat.*;
 
+import java.util.Arrays;
+
 public class TrChatCoreSdk extends TrChatCoreSdkBase {
 
     public static final String TAG = TrChatCoreSdk.class.getSimpleName();
@@ -32,8 +34,8 @@ public class TrChatCoreSdk extends TrChatCoreSdkBase {
 
     private Context mContext = null;
     private AnyChatCoreSDK mAnyChat = null;
-    public static AnyChatCameraHelper mCameraHelper = AnyChatCoreSDK.mCameraHelper;
-    public static AnyChatSensorHelper mSensorHelper = AnyChatCoreSDK.mSensorHelper;
+    public  AnyChatCameraHelper mCameraHelper ;
+    public  AnyChatSensorHelper mSensorHelper ;
     private TrChatBaseEvent mBaseEvent = null;
     private TrChatTransDataEvent mTransDataEvent = null;
     private TrChatStateChgEvent mStateChgEvent = null;
@@ -62,6 +64,8 @@ public class TrChatCoreSdk extends TrChatCoreSdkBase {
             mAnyChat.SetUserInfoEvent(mAnyChatUserInfoEvent);
             mAnyChat.SetVideoCallEvent(mAnyChatVideoCallEvent);
             mAnyChat.InitSDK(android.os.Build.VERSION.SDK_INT, 0);
+            mCameraHelper = AnyChatCoreSDK.mCameraHelper;
+            mSensorHelper = AnyChatCoreSDK.mSensorHelper;
         }
     }
 
@@ -158,6 +162,7 @@ public class TrChatCoreSdk extends TrChatCoreSdkBase {
     @Override
     public int transBuff(int userid, byte[] buf, int len) {
         valid();
+        Log.d(TAG,"transBuff userid:"+userid +" buff:"+ Arrays.toString(buf));
         return mAnyChat.TransBuffer(userid, buf, len);
     }
 
@@ -218,6 +223,18 @@ public class TrChatCoreSdk extends TrChatCoreSdkBase {
     public int setVideoPos(int userid, Surface s, int lef, int top, int right, int bottom) {
         valid();
         return mAnyChat.SetVideoPos(userid, s, lef, top, right, bottom);
+    }
+
+    @Override
+    public String getUserName(int userid) {
+        valid();
+        return mAnyChat.GetUserName(userid);
+    }
+
+    @Override
+    public String getIpAddr(int userid) {
+        valid();
+        return mAnyChat.GetUserIPAddr(userid);
     }
 
     @Override

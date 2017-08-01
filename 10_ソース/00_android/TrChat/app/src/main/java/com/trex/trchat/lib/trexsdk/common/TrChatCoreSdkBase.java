@@ -62,6 +62,9 @@ public abstract class TrChatCoreSdkBase {
     public abstract int setVideoPos(int userid, Surface s, int lef, int top, int right, int bottom);
 
 
+    public abstract String getUserName(int userid);
+    public abstract String getIpAddr(int userid);
+
     //    获取用户好友ID列表
     public abstract int[] getUserFriends();
     // 获取好友在线状态

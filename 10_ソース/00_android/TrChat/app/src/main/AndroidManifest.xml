@@ -15,7 +15,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
-android:name=".TrChatApplication"
+        android:name="com.trex.trchat.TrChatApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -25,7 +25,6 @@ android:name=".TrChatApplication"
         <activity android:name=".ui.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -35,7 +34,8 @@ android:name=".TrChatApplication"
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".ui.VideoActivity" />
+        <activity android:name=".ui.VideoActivity"
+            android:screenOrientation="landscape"/>
 
         <receiver
             android:name=".resident.ResidentReceiver"
@@ -43,7 +43,6 @@ android:name=".TrChatApplication"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>

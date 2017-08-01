@@ -6,49 +6,74 @@
     tools:context="com.trex.trchat.ui.VideoActivity">
 
     <LinearLayout
+        android:orientation="vertical"
+        android:weightSum="4"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <SurfaceView
+            android:id="@+id/surface_main"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:weightSum="4">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="3" >
-            <SurfaceView
-                android:id="@+id/surface_main"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-        </LinearLayout>
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:weightSum="4">
+            android:orientation="horizontal"
+            android:weightSum="5">
+
 
             <SurfaceView
                 android:id="@+id/surface_user1"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+
                 android:layout_weight="1"
+
                 android:padding="5dp" />
+
+
             <SurfaceView
                 android:id="@+id/surface_user2"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+
                 android:layout_weight="1"
+
                 android:padding="5dp" />
+
             <SurfaceView
                 android:id="@+id/surface_user3"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
 
                 android:layout_weight="1"
 
                 android:padding="5dp" />
+
 
         </LinearLayout>
     </LinearLayout>
