@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Widget</class>
+ <widget class="QWidget" name="Widget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>886</width>
+    <height>630</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>HelloChat</string>
+  </property>
+  <widget class="QWidget" name="horizontalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>29</x>
+     <y>259</y>
+     <width>201</width>
+     <height>121</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="UserListhorizontalLayout">
+    <item>
+     <widget class="QListWidget" name="UserlistWidget"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="horizontalWidgetRemoteUser" native="true">
+   <property name="geometry">
+    <rect>
+     <x>280</x>
+     <y>40</y>
+     <width>511</width>
+     <height>331</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="RemoteUserhorizontalLayout">
+    <item>
+     <widget class="QLabel" name="RemoteUserlabel">
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>RemoteUser</string>
+      </property>
+      <property name="scaledContents">
+       <bool>true</bool>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="horizontalWidgetLocalUser" native="true">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>390</y>
+     <width>201</width>
+     <height>181</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="LocalUserhorizontalLayout">
+    <item>
+     <widget class="QLabel" name="LocalUserlabel">
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>LocalUser</string>
+      </property>
+      <property name="scaledContents">
+       <bool>true</bool>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QProgressBar" name="LocalUserProgressBar">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>570</y>
+     <width>201</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="value">
+    <number>24</number>
+   </property>
+  </widget>
+  <widget class="QProgressBar" name="RemoteUserprogressBar">
+   <property name="geometry">
+    <rect>
+     <x>280</x>
+     <y>370</y>
+     <width>511</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="value">
+    <number>24</number>
+   </property>
+  </widget>
+  <widget class="QWidget" name="horizontalLayoutWidget_4">
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>170</y>
+     <width>201</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QPushButton" name="EnterRoom_Btn">
+      <property name="text">
+       <string>Enter</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="LeaveRoom_Btn">
+      <property name="text">
+       <string>Leave</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="verticalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>289</x>
+     <y>399</y>
+     <width>501</width>
+     <height>191</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QTextEdit" name="SysMsgTextEdit"/>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <item>
+       <widget class="QLineEdit" name="SendMsglineEdit"/>
+      </item>
+      <item>
+       <widget class="QPushButton" name="SendMsg_Btn">
+        <property name="text">
+         <string>Send</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="horizontalLayoutWidget_5">
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>130</y>
+     <width>201</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <item>
+     <widget class="QLabel" name="RoomIdlabel">
+      <property name="text">
+       <string>RoomId:     </string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="RoomId_lineEdit"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>230</y>
+     <width>201</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Online Remote User List</string>
+   </property>
+  </widget>
+  <widget class="QWidget" name="horizontalLayoutWidget_6">
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>70</y>
+     <width>201</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_4">
+    <item>
+     <widget class="QLabel" name="label_2">
+      <property name="text">
+       <string>ServerPort:</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="ServerPort_lineEdit"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="horizontalLayoutWidget_7">
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>40</y>
+     <width>201</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_5">
+    <item>
+     <widget class="QLabel" name="label_3">
+      <property name="text">
+       <string>ServerIP:</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="ServerIP_lineEdit"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="horizontalLayoutWidget_8">
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>100</y>
+     <width>201</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_6">
+    <item>
+     <widget class="QLabel" name="label_4">
+      <property name="text">
+       <string>UserName:</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="UserName_lineEdit"/>
+    </item>
+   </layout>
+  </widget>
+  <zorder>horizontalLayoutWidget</zorder>
+  <zorder>LocalUserProgressBar</zorder>
+  <zorder>RemoteUserprogressBar</zorder>
+  <zorder>horizontalLayoutWidget_4</zorder>
+  <zorder>verticalLayoutWidget</zorder>
+  <zorder>horizontalLayoutWidget_5</zorder>
+  <zorder>label</zorder>
+  <zorder>horizontalLayoutWidget_6</zorder>
+  <zorder>horizontalLayoutWidget_7</zorder>
+  <zorder>horizontalLayoutWidget_8</zorder>
+  <zorder>horizontalWidgetRemoteUser</zorder>
+  <zorder>horizontalWidgetLocalUser</zorder>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>
