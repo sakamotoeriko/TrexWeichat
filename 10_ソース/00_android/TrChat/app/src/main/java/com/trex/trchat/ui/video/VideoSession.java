@@ -49,11 +49,12 @@ public class VideoSession {
         } else {
             if (!isMainView) {
                 Log.d(TAG, "not the main view");
-//                surfaceView.setZOrderOnTop(true);
+                surfaceView.setZOrderOnTop(true);
             }
             surfaceView.setTag(userid);
             index = mTrChatCoreSdk.bindVideo(surfaceView.getHolder());
             mTrChatCoreSdk.setVideoUser(index, userid);
+
             Log.d(TAG, "init target userid:" + userid + " index:" + index + "surface:" + (String) surfaceView.getTag(R.string.index));
         }
     }

@@ -4,6 +4,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.trex.trchat.ui.VideoActivity">
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <SurfaceView
+            android:id="@+id/surface_main"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
+
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -15,12 +24,7 @@
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="3" >
-            <SurfaceView
-                android:id="@+id/surface_main"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-        </LinearLayout>
+            android:layout_weight="3" />
 
         <LinearLayout
             android:layout_width="0dp"

@@ -129,6 +129,10 @@ public class VideoActivity extends Activity implements TrChatBaseEvent, VideoCal
         mSurfaceUsr2.setVisibility(View.VISIBLE);
         mSurfaceUsr3.setVisibility(View.VISIBLE);
 
+        mSurfaceUsr1.setZOrderOnTop(true);
+        mSurfaceUsr2.setZOrderOnTop(true);
+        mSurfaceUsr3.setZOrderOnTop(true);
+
         mSurfaceMain.setTag(R.string.index, "mSurfaceMain");
         mSurfaceUsr1.setTag(R.string.index, "mSurfaceUsr1");
         mSurfaceUsr2.setTag(R.string.index, "mSurfaceUsr2");
