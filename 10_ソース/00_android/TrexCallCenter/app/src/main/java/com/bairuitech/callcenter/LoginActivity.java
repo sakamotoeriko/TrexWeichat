@@ -139,7 +139,7 @@ public class LoginActivity extends Activity implements AnyChatBaseEvent,
 
 	private void Login() {
 		 strUserName = mEditAccount.getEditableText().toString();
-		
+
 		if (mCheckRemember.isChecked()) {
 			configEntity.IsSaveNameAndPw = true;
 			configEntity.name = strUserName;
