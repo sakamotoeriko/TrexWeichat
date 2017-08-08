@@ -58,7 +58,7 @@ public class ResidentService extends Service implements TrChatTransDataEvent {
             case VideoCallProtocol.VIDEOCALL_RECIEVED_REQUEST: {
                 RoomInfo roomInfo = VideoCallProtocol.getRoomInfoByRequestData(lpBuf);
                 session.setRoomInfo(roomInfo);
-                videoCall.recieveVideoCall(session);
+                videoCall.receiveVideoCall(session);
             }
             break;
             case VideoCallProtocol.VIDEOCALL_RECIEVED_REPLAY: {
@@ -68,7 +68,9 @@ public class ResidentService extends Service implements TrChatTransDataEvent {
                 session.setRoomInfo(roomInfo);
                 if (status == ConnectSession.CONNECTSESSION_STATUS_REJECTED_RECALL) {
                     //need to call again
-                    videoCall.requestVideoCallRecall(session);
+//                    videoCall.requestVideoCallRecall(session);
+                    session.setStatus(ConnectSession.CONNECTSESSION_STATUS_REJECTED);
+                    videoCall.revieveVideoCallReplay(session);
                 } else {
                     //rejected or accepted
                     videoCall.revieveVideoCallReplay(session);
@@ -76,7 +78,9 @@ public class ResidentService extends Service implements TrChatTransDataEvent {
             }
             break;
             case VideoCallProtocol.VIDEOCALL_RECIEVED_ENDCALL:
-                //TODO
+                RoomInfo roomInfo = VideoCallProtocol.getRoomInfoByEndcallData(lpBuf);
+                session.setRoomInfo(roomInfo);
+                videoCall.receiveVideoCall(session);
                 break;
             case VideoCallProtocol.INVALID:
                 //error path

@@ -13,6 +13,10 @@ public class AppSettings {
     }
 
     public boolean isAutoReplay(){
-        return true;
+        return false;
+    }
+
+    public String getAvatarServerUrlStr(){
+        return "http://157.7.165.211:5110/avatar/";
     }
 }

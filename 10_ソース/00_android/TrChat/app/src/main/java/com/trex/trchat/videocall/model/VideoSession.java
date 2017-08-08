@@ -1,4 +1,4 @@
-package com.trex.trchat.ui.video;
+package com.trex.trchat.videocall.model;
 
 import android.graphics.PixelFormat;
 import android.util.Log;
@@ -166,4 +166,5 @@ public class VideoSession {
     private boolean isLocal() {
         return (userid == -1);
     }
+    public int getUserid(){return userid;}
 }

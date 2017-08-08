@@ -51,14 +51,17 @@ public class FrindsListAdapter extends BaseAdapter {
             vh = (ViewHolder) convertView.getTag();
         }
         UserInfo user = mFrinds.get(position);
-        vh.id.setText(""+user.getUserid());
-        vh.name.setText(""+user.getUsername());
-        if (position==0){
+        vh.id.setText("" + user.getUserid());
+        vh.name.setText("" + user.getUsername());
+        if (position == 0) {
             vh.id.setTextColor(Color.RED);
             vh.name.setTextColor(Color.RED);
-        }else{
-            vh.id.setTextColor(Color.WHITE);
-            vh.name.setTextColor(Color.WHITE);
+        } else if (user.isOnline()) {
+            vh.id.setTextColor(Color.GREEN);
+            vh.name.setTextColor(Color.GREEN);
+        } else {
+            vh.id.setTextColor(Color.GRAY);
+            vh.name.setTextColor(Color.GRAY);
         }
         return convertView;
     }

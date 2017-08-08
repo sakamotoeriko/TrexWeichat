@@ -26,9 +26,9 @@ public class HomeActivity extends Activity implements TrChatBaseEvent, TrChatUse
 
     public static final String TAG = HomeActivity.class.getSimpleName();
     TrChatCoreSdk mTrChatCoreSdk;
+    TrChatController mTrChatController;
     ListView mFrindListView;
     FrindsListAdapter mFrindsListAdapter;
-    TrChatController mTrChatController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +43,8 @@ public class HomeActivity extends Activity implements TrChatBaseEvent, TrChatUse
         mTrChatController.getVideoCallController().setListener(this);
 
         mFrindListView = (ListView) findViewById(R.id.frindlist);
-        mFrindsListAdapter = new FrindsListAdapter(this, mTrChatController.updateFrindsList());
+        mFrindsListAdapter = new FrindsListAdapter(this, mTrChatController.getFrindsList());
+        mTrChatController.updateFrindsList(mFrindsListAdapter);
         mFrindListView.setAdapter(mFrindsListAdapter);
 
 
@@ -139,7 +140,7 @@ public class HomeActivity extends Activity implements TrChatBaseEvent, TrChatUse
     @Override
     public void OnAnyChatUserInfoUpdate(int dwUserId, int dwType) {
         if (dwUserId == 0 && dwType == 0) {
-            mTrChatController.updateFrindsList();
+            mTrChatController.updateFrindsList(mFrindsListAdapter);
             if (mFrindsListAdapter != null)
                 mFrindsListAdapter.notifyDataSetChanged();
         }
@@ -154,7 +155,7 @@ public class HomeActivity extends Activity implements TrChatBaseEvent, TrChatUse
     private void gotoVideoActivity(ConnectSession session) {
         Intent intent = new Intent(this, VideoActivity.class);
         intent.putExtra(VideoActivity.INTENT_EXTRA_SESSION, session);
-        Log.d(TAG,"ConnectSession:"+session.toString());
+        Log.d(TAG, "ConnectSession:" + session.toString());
         startActivity(intent);
     }
 
@@ -174,5 +175,10 @@ public class HomeActivity extends Activity implements TrChatBaseEvent, TrChatUse
     public void onReplay(ConnectSession session) {
         Log.d(TAG, "onReplay session:" + session.toString());
 
+    }
+
+    @Override
+    public void onEndCall(ConnectSession session) {
+        Log.d(TAG, "onEndCall session:" + session.toString());
     }
 }

@@ -4,9 +4,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.trex.trchat.ui.VideoActivity">
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
         <SurfaceView
             android:id="@+id/surface_main"
             android:layout_width="match_parent"
@@ -17,53 +19,180 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="horizontal"
-        android:weightSum="4">
+        android:gravity="right"
+        android:orientation="horizontal">
 
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            android:layout_weight="1" />
+
+        <SurfaceView
+            android:id="@+id/surface_user1"
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            android:layout_weight="10"
+            android:padding="5dp" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            android:layout_weight="1" />
+
+        <SurfaceView
+            android:id="@+id/surface_user2"
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            android:layout_weight="10"
+            android:padding="5dp" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            android:layout_weight="1" />
+
+        <SurfaceView
+            android:id="@+id/surface_user3"
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            android:layout_weight="10"
+            android:padding="5dp" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/controlframe"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#ef363838"
+        android:clickable="true"
+        android:onClick="onClick"
+        android:orientation="vertical">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="3" />
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:weightSum="4">
+            android:orientation="vertical">
 
-            <SurfaceView
-                android:id="@+id/surface_user1"
+            <TextView
+                android:id="@+id/calltime"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="2"
+                android:gravity="center"
+                android:text="00:00"
+                android:textSize="25dp" />
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:padding="5dp" />
-            <SurfaceView
-                android:id="@+id/surface_user2"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="right">
+
+                    <Button
+                        android:id="@+id/micphone_onoff"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:background="@drawable/button_micphone_selector"
+                        android:onClick="onClick" />
+                </LinearLayout>
+
+                <RelativeLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <Button
+                        android:id="@+id/video_onoff"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_centerHorizontal="true"
+                        android:background="@drawable/button_video_selector"
+                        android:onClick="onClick" />
+                </RelativeLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="left">
+
+                    <Button
+                        android:id="@+id/addmember"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:background="@drawable/ic_plusmark"
+                        android:onClick="onClick" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="1"
-                android:padding="5dp" />
-            <SurfaceView
-                android:id="@+id/surface_user3"
+                android:layout_weight="1">
+
+                <Button
+                    android:id="@+id/endcall"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_centerHorizontal="true"
+                    android:background="@drawable/ic_rejectcall"
+                    android:onClick="onClick" />
+            </RelativeLayout>
+
+            <View
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-
-                android:layout_weight="1"
-
-                android:padding="5dp" />
-
+                android:layout_weight="1" />
         </LinearLayout>
     </LinearLayout>
 
-    <Button
-        android:id="@+id/endcall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_margin="10dp"
-        android:onClick="onClick"
-        android:text="end call" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <ListView
+            android:id="@+id/memberlist"
+            android:layout_width="0dp"
+            android:layout_height="300dp"
+            android:layout_gravity="center"
+            android:layout_marginBottom="20dp"
+            android:layout_weight="1"
+            android:background="@drawable/border_background"
+            android:visibility="gone" />
+    </LinearLayout>
+
 </RelativeLayout>

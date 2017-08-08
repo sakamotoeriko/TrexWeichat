@@ -13,7 +13,9 @@ public class ConnectSession implements Serializable {
     public static final int CONNECTSESSION_STATUS_REJECTED = 0x02;
     public static final int CONNECTSESSION_STATUS_REJECTED_RECALL = 0x03;
     public static final int CONNECTSESSION_STATUS_ACCEPTED = 0x04;
-    public static final int CONNECTSESSION_STATUS_CHATTING = 0x05;
+    public static final int CONNECTSESSION_STATUS_TIMEOUT = 0x05;
+    public static final int CONNECTSESSION_STATUS_ENDCALL = 0x06;
+    public static final int CONNECTSESSION_STATUS_CHATTING = 0x07;
 
 
     int targetUserId;

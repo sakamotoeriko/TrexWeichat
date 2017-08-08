@@ -22,9 +22,9 @@ public class VideoCallProtocol {
 
     /*
     endcall:
-    ---------|--------------|------------|
-    pre:2byte|function:1byte|Action:1byte|
-    ---------|--------------|------------|
+    ---------|--------------|------------| |------------|
+    pre:2byte|function:1byte|Action:1byte| |roomid:2byte|
+    ---------|--------------|------------| |------------|
      */
     public static final int CALLPROFILE_BYTES_LENTH = 4;
     public static final byte[] CALLPROFILE_PRE = {(byte) 0xff, (byte) 0xfe};// pre byte
@@ -60,7 +60,8 @@ public class VideoCallProtocol {
         return replay;
     }
 
-    public static byte[] createVideoCallReplay(boolean reject, RoomInfo roomInfo) {
+    // answer 0:accept 1:reject 2:recall
+    public static byte[] createVideoCallReplay(int answer, RoomInfo roomInfo) {
         byte[] rid = Utils.int2bytes(roomInfo.getId());
         byte[] pwd = Utils.str2bytes(roomInfo.getPwd());
         byte[] replay = new byte[CALLPROFILE_BYTES_LENTH + 1 + rid.length + pwd.length];
@@ -68,7 +69,7 @@ public class VideoCallProtocol {
         replay[1] = CALLPROFILE_PRE[1];
         replay[2] = CALLPROFILE_FUNC_VIDEOCALL;
         replay[3] = CALLPROFILE_VIDEOCALL_ACTION_REPLAY;
-        replay[4] = reject ? (byte) 0x01 : (byte) 0x00;
+        replay[4] = (byte) (answer & 0x0f);
         replay[5] = rid[0];
         replay[6] = rid[1];
         if (pwd != null && pwd.length > 0) {
@@ -77,12 +78,15 @@ public class VideoCallProtocol {
         return replay;
     }
 
-    public static byte[] createVideoCallEndCall() {
-        byte[] endcall = new byte[CALLPROFILE_BYTES_LENTH];
+    public static byte[] createVideoCallEndCall(RoomInfo roomInfo) {
+        byte[] endcall = new byte[CALLPROFILE_BYTES_LENTH + 2];
         endcall[0] = CALLPROFILE_PRE[0];
         endcall[1] = CALLPROFILE_PRE[1];
         endcall[2] = CALLPROFILE_FUNC_VIDEOCALL;
         endcall[3] = CALLPROFILE_VIDEOCALL_ACTION_ENDCALL;
+        byte[] rid = Utils.int2bytes(roomInfo.getId());
+        endcall[4] = rid[0];
+        endcall[5] = rid[1];
         return endcall;
     }
 
@@ -126,16 +130,25 @@ public class VideoCallProtocol {
         int replayStatus;
         if (recieve[4] == (byte) 0x00) {
             replayStatus = ConnectSession.CONNECTSESSION_STATUS_ACCEPTED;
+        } else if (recieve[4] == (byte) 0x01) {
+            replayStatus = ConnectSession.CONNECTSESSION_STATUS_REJECTED;
         } else {
-            int pwdlenth = recieve.length - (CALLPROFILE_BYTES_LENTH + 1 + 2);
-            if (pwdlenth >= 0) {
-                roomInfo.copyInstance(getRoomInfoByReplayData(recieve));
-                replayStatus = ConnectSession.CONNECTSESSION_STATUS_REJECTED_RECALL;
-            } else {
-                replayStatus = ConnectSession.CONNECTSESSION_STATUS_REJECTED;
-            }
+            replayStatus = ConnectSession.CONNECTSESSION_STATUS_REJECTED_RECALL;
         }
+        roomInfo.copyInstance(getRoomInfoByReplayData(recieve));
         return replayStatus;
+    }
+
+    public static RoomInfo getRoomInfoByEndcallData(byte[] data) {
+        if (!VideoCallProtocol.isEndCall(data)) {
+            return null;
+        }
+
+        byte[] rid = new byte[2];
+        rid[0] = data[4];
+        rid[1] = data[5];
+        int roomid = Utils.bytes2int(rid);
+        return new RoomInfo(roomid, "");
     }
 
     public static boolean isEndCall(byte[] recieve) {

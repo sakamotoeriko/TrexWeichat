@@ -1,5 +1,7 @@
 package com.trex.trchat.videocall.model;
 
+import android.graphics.Bitmap;
+
 import java.io.Serializable;
 
 public class UserInfo implements Serializable {
@@ -7,18 +9,38 @@ public class UserInfo implements Serializable {
     public static final int USERSTATUS_OFFLINE = 0;
     public static final int USERSTATUS_ONLINE = 1;
     public static final int USERINFO_NAME = 1;
-    public static final int USERINFO_IP = 2;
+    public static final int USERINFO_NICKNAME = 2;
 
     private int userid;
-    private String username;
+    private String username;//for login
+    private String nickname;//for display
     private String ip;
+    private boolean isOnline;
+    private Bitmap avatar;
+
 
     public UserInfo(int userid, String username, String ip) {
         this.userid = userid;
         this.username = username;
         this.ip = ip;
+        avatar = null;
     }
 
+    public Bitmap getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(Bitmap avatar) {
+        this.avatar = avatar;
+    }
+
+    public boolean isOnline() {
+        return isOnline;
+    }
+
+    public void setOnline(boolean online) {
+        isOnline = online;
+    }
     public int getUserid() {
         return userid;
     }
@@ -27,6 +49,13 @@ public class UserInfo implements Serializable {
         this.userid = userid;
     }
 
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
     public String getUsername() {
         return username;
     }
@@ -68,4 +97,6 @@ public class UserInfo implements Serializable {
                 ", ip='" + ip + '\'' +
                 '}';
     }
+
+
 }

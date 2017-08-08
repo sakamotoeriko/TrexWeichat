@@ -1,5 +1,6 @@
 package com.trex.trchat.ui;
 
+import android.animation.Animator;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,22 +8,32 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.trex.trchat.R;
 import com.trex.trchat.lib.trexsdk.TrChatCoreSdk;
 import com.trex.trchat.lib.trexsdk.callbacks.TrChatBaseEvent;
 import com.trex.trchat.trexbusiness.TrChatController;
-import com.trex.trchat.ui.video.VideoSession;
+import com.trex.trchat.ui.adapter.MemberListAdapter;
+import com.trex.trchat.videocall.model.UserInfo;
+import com.trex.trchat.videocall.model.VideoSession;
 import com.trex.trchat.videocall.VideoCallController;
 import com.trex.trchat.videocall.model.ConnectSession;
 import com.trex.trchat.videocall.model.RoomInfo;
-import com.trex.trchat.videocall.model.UserInfo;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class VideoActivity extends Activity implements TrChatBaseEvent, VideoCallController.VideoCallListener {
     public static final String TAG = VideoActivity.class.getSimpleName();
@@ -34,7 +45,14 @@ public class VideoActivity extends Activity implements TrChatBaseEvent, VideoCal
     private SurfaceView mSurfaceUsr2;
     private SurfaceView mSurfaceUsr3;
 
+    private View mControlFrame;
+    private Button mMicOnoff;
+    private Button mVideoOnoff;
+    private Button mAddMember;
+    private TextView mCallTime;
+    private ListView mMemberList;
 
+    Timer mTimer;
     List<VideoSession> mVideoSessions = Collections.synchronizedList(new ArrayList<VideoSession>());
 
     private TrChatCoreSdk mTrChatCoreSdk;
@@ -59,7 +77,7 @@ public class VideoActivity extends Activity implements TrChatBaseEvent, VideoCal
         ConnectSession session;
         if (intent.hasExtra(INTENT_EXTRA_SESSION)) {
             session = (ConnectSession) intent.getSerializableExtra(INTENT_EXTRA_SESSION);
-            Log.d(TAG,"ConnectSession:"+session.toString());
+            Log.d(TAG, "ConnectSession:" + session.toString());
             mTrChatCoreSdk.enterRoom(session.getRoomInfo().getId(), session.getRoomInfo().getPwd());
         } else {
             finish();
@@ -98,13 +116,25 @@ public class VideoActivity extends Activity implements TrChatBaseEvent, VideoCal
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.endcall:
-                //TODO
 
+                //TODO
                 for (VideoSession session : mVideoSessions) {
                     session.stop();
                 }
                 mVideoSessions.clear();
                 finish();
+                break;
+            case R.id.addmember:
+                memberlistVisible();
+                break;
+            case R.id.micphone_onoff:
+                mMicOnoff.setSelected(!mMicOnoff.isSelected());
+                break;
+            case R.id.video_onoff:
+                mVideoOnoff.setSelected(!mVideoOnoff.isSelected());
+                break;
+            case R.id.controlframe:
+                mHandler.post(memberlistFadeOut);
                 break;
         }
     }
@@ -138,6 +168,192 @@ public class VideoActivity extends Activity implements TrChatBaseEvent, VideoCal
         mSurfaceUsr2.setTag(R.string.index, "mSurfaceUsr2");
         mSurfaceUsr3.setTag(R.string.index, "mSurfaceUsr3");
 
+        mCallTime = (TextView) findViewById(R.id.calltime);
+        mControlFrame = findViewById(R.id.controlframe);
+        mMicOnoff = (Button) findViewById(R.id.micphone_onoff);
+        mVideoOnoff = (Button) findViewById(R.id.video_onoff);
+        mAddMember = (Button) findViewById(R.id.addmember);
+
+        controlFrameVisible();
+        initTimer();
+
+        mSurfaceMain.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                controlFrameVisible();
+                return false;
+            }
+        });
+
+        mMemberList = (ListView) findViewById(R.id.memberlist);
+        final TrChatController controller = TrChatController.getInstance(getApplication());
+        final MemberListAdapter adapter = new MemberListAdapter(this, controller.getFrindsList());
+        controller.updateFrindsList(adapter);
+        mMemberList.setAdapter(adapter);
+        mMemberList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                //TODO
+                UserInfo user = (UserInfo) adapter.getItem(position);
+                for (VideoSession s : mVideoSessions) {
+                    if (s.getUserid() == user.getUserid()) {
+                        Toast.makeText(getApplication(), "已在视频通话中", Toast.LENGTH_SHORT);
+                        return;
+                    }
+                }
+                ConnectSession session = new ConnectSession(user.getUserid(), -1, mVideoCallController.getRoomInfo().getId(), mVideoCallController.getRoomInfo().getPwd());
+                mVideoCallController.requestVideoCall(session);
+            }
+        });
+    }
+
+    private Runnable memberlistFadeOut = new Runnable() {
+        @Override
+        public void run() {
+            if (mMemberList != null)
+                mMemberList.animate().alpha(0.0f).setDuration(1000).setListener(new Animator.AnimatorListener() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {
+                        Log.d(TAG, "mMemberList onAnimationStart");
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        Log.d(TAG, "mMemberList onAnimationEnd");
+                        mMemberList.setVisibility(View.GONE);
+                    }
+
+                    @Override
+                    public void onAnimationCancel(Animator animation) {
+                        Log.d(TAG, "mMemberList onAnimationCancel");
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animator animation) {
+                        Log.d(TAG, "mMemberList onAnimationRepeat");
+                    }
+                }).start();
+            if (mControlFrame != null)
+                mControlFrame.postDelayed(controlViewFadeout, 1000);
+        }
+    };
+
+    private void memberlistVisible() {
+        mControlFrame.removeCallbacks(controlViewFadeout);
+        mMemberList.setVisibility(View.VISIBLE);
+        mMemberList.animate().alpha(1.0f).setDuration(1000).setListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mMemberList.setVisibility(View.VISIBLE);
+                mMemberList.setAlpha(1.0f);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        }).start();
+        mHandler.postDelayed(memberlistFadeOut, 3000);
+        mMemberList.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    mHandler.removeCallbacks(memberlistFadeOut);
+                    mHandler.postDelayed(memberlistFadeOut, 3000);
+                }
+                return false;
+            }
+        });
+    }
+
+    private void initTimer() {
+        if (mTimer == null)
+            mTimer = new Timer();
+
+        final Calendar counter = Calendar.getInstance();
+        counter.set(Calendar.MINUTE, 0);
+        counter.set(Calendar.SECOND, 0);
+        mTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (counter == null) return;
+                counter.add(Calendar.SECOND, 1);
+                final String tm = String.format("%02d:%02d", counter.get(Calendar.MINUTE), counter.get(Calendar.SECOND));
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mCallTime.setText(tm);
+                    }
+                });
+            }
+        }, 0, 1000);
+
+    }
+
+    private Runnable controlViewFadeout = new Runnable() {
+        @Override
+        public void run() {
+            mControlFrame.animate().alpha(0.0f).setDuration(1000).setListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                    Log.d(TAG, "onAnimationStart");
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    Log.d(TAG, "onAnimationEnd");
+                    mControlFrame.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+                    Log.d(TAG, "onAnimationCancel");
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {
+                    Log.d(TAG, "onAnimationRepeat");
+                }
+            }).start();
+        }
+    };
+
+    private void controlFrameVisible() {
+        mControlFrame.setVisibility(View.VISIBLE);
+        mControlFrame.animate().alpha(1.0f).setDuration(1000).setListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mControlFrame.setVisibility(View.VISIBLE);
+                mControlFrame.setAlpha(1.0f);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        }).start();
+        mHandler.removeCallbacks(controlViewFadeout);
+        mHandler.postDelayed(controlViewFadeout, 10000);
     }
 
     private void initVideoSession() {
@@ -333,4 +549,11 @@ public class VideoActivity extends Activity implements TrChatBaseEvent, VideoCal
     public void onReplay(ConnectSession session) {
 
     }
+
+    @Override
+    public void onEndCall(ConnectSession session) {
+
+    }
+
+
 }

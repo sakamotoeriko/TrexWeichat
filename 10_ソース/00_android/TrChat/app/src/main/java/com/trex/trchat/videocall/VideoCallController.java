@@ -29,6 +29,8 @@ public class VideoCallController {
         void onRecieved(ConnectSession session);
 
         void onReplay(ConnectSession session);
+
+        void onEndCall(ConnectSession session);
     }
 
     private Context mContext;
@@ -62,9 +64,26 @@ public class VideoCallController {
         return sessions.get(0).getRoomInfo();
     }
 
-    public void clearSession(){
+    public void clearSession() {
         sessions.clear();
     }
+
+    public synchronized void receiveVideoCallEndCall(final ConnectSession session) {
+        Log.d(TAG, "receiveVideoCallEndCall session:" + session.toString());
+
+        sessions.remove(session);
+        if (mListener != null)
+            mListener.onEndCall(session);
+    }
+
+    public synchronized void requestVideoCallEndCall(final ConnectSession session) {
+        Log.d(TAG, "requestVideoCallEndCall session:" + session.toString());
+
+        byte[] request = VideoCallProtocol.createVideoCallEndCall(session.getRoomInfo());
+        mTrChatCoreSdk.transBuff(session.getTargetUserId(), request, request.length);
+        sessions.remove(session);
+    }
+
     public synchronized void requestVideoCall(final ConnectSession session) {
         Log.d(TAG, "requestVideoCall session:" + session.toString());
 
@@ -81,9 +100,13 @@ public class VideoCallController {
             public void run() {
                 Log.d(TAG, "requestVideoCall timeout session:" + session.toString());
                 sessions.remove(session);
+                session.setStatus(ConnectSession.CONNECTSESSION_STATUS_TIMEOUT);
+                if (mListener != null) {
+                    mListener.onReplay(session);
+                }
             }
         };
-        mHandler.postDelayed(requestTimeoutRun, 10000);
+        mHandler.postDelayed(requestTimeoutRun, 30000);
         if (mListener != null)
             mListener.onRequested(session);
     }
@@ -92,9 +115,10 @@ public class VideoCallController {
         Log.d(TAG, "requestVideoCallRecall session:" + session.toString());
         if (requestTimeoutRun != null)
             mHandler.removeCallbacks(requestTimeoutRun);
-
+        sessions.remove(session);
         requestVideoCall(session);
     }
+
     private Runnable requestTimeoutRun;
 
 
@@ -102,35 +126,47 @@ public class VideoCallController {
         if (requestTimeoutRun != null)
             mHandler.removeCallbacks(requestTimeoutRun);
 
+        if (session.getStatus() != ConnectSession.CONNECTSESSION_STATUS_ACCEPTED) {
+            sessions.remove(session);
+            for (ConnectSession s : sessions) {
+                Log.d(TAG, "revieveVideoCallReplay s:" + s.toString());
+            }
+        }
+        for (ConnectSession s : sessions) {
+            if (s.equals(session)) {
+                s.setStatus(ConnectSession.CONNECTSESSION_STATUS_CHATTING);
+            }
+        }
         if (mListener != null) {
             mListener.onReplay(session);
         }
     }
 
-    public synchronized void recieveVideoCall(ConnectSession session) {
-        Log.d(TAG, "recieveVideoCall session:" + session.toString());
-        if (AppSettings.getInstance().isAutoReplay()) {
-            //auto replay
-            if (session.canStartNewSession(sessions)) {
-                byte[] replay = VideoCallProtocol.createVideoCallReplay(false);
-                mTrChatCoreSdk.transBuff(session.getTargetUserId(), replay, replay.length);
-                sessions.add(session);
-                if (mListener != null)
-                    mListener.onRecieved(session);
+    public synchronized void replayVideoCall(ConnectSession session, boolean reject) {
+        byte[] replay = VideoCallProtocol.createVideoCallReplay(reject ? 1 : 0,
+                session.getRoomInfo());
+        mTrChatCoreSdk.transBuff(session.getTargetUserId(), replay, replay.length);
+        if (!reject) sessions.add(session);
+    }
 
-            } else {
-                if (sessions.isEmpty() || sessions.get(0) == null) {
-                    //illegal path
-                    Log.e(TAG, "recieveVideoCall illegal path");
-                    return;
-                }
-                byte[] replay = VideoCallProtocol.createVideoCallReplay(true, sessions.get(0).getRoomInfo());
-                //not in the same room,replay owned roomid and wating to another request if target can join
-                mTrChatCoreSdk.transBuff(session.getTargetUserId(), replay, replay.length);
-            }
+    public synchronized void receiveVideoCall(ConnectSession session) {
+        Log.d(TAG, "receiveVideoCall session:" + session.toString());
+
+        if (session.canStartNewSession(sessions)) {
+            // idle or in the same room
+            if (mListener != null)
+                mListener.onRecieved(session);
+
         } else {
-            //show replay dialog
-            //TODO
+            if (sessions.isEmpty() || sessions.get(0) == null) {
+                //illegal path
+                Log.e(TAG, "receiveVideoCall illegal path");
+                return;
+            }
+            //recall
+            byte[] replay = VideoCallProtocol.createVideoCallReplay(2, sessions.get(0).getRoomInfo());
+            //not in the same room,replay owned roomid and wating to another request if target can join
+            mTrChatCoreSdk.transBuff(session.getTargetUserId(), replay, replay.length);
         }
     }
 
