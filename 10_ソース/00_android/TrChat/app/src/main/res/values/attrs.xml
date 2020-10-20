@@ -1,0 +1,5 @@
+<resources>
+    <declare-styleable name="CustomViewPager">
+        <attr name = "scrollable" format = "boolean" />
+    </declare-styleable>
+</resources>
